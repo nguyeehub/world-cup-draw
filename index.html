@@ -411,6 +411,32 @@
       line-height: 1;
     }
 
+    .match.completed {
+      border-color: rgba(228, 184, 93, .58);
+      border-left-color: var(--coral);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, .23), inset 0 0 28px rgba(228, 184, 93, .045);
+    }
+
+    .match.completed .team { padding-right: clamp(43px, 3vw, 56px); }
+
+    .match-status {
+      position: absolute;
+      z-index: 3;
+      top: 50%;
+      right: 7px;
+      transform: translateY(-50%);
+      padding: 4px 5px 3px 7px;
+      border: 1px solid rgba(255, 255, 255, .16);
+      background: var(--coral);
+      box-shadow: 0 3px 12px rgba(0,0,0,.24);
+      color: #fff8e8;
+      font-size: clamp(6px, .47vw, 9px);
+      font-weight: 900;
+      letter-spacing: .15em;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+
     .team {
       position: relative;
       z-index: 1;
@@ -739,8 +765,8 @@
 
       // Use a draw number (1–10) for the winner, or null if not played yet.
       winners: {
-        PI1: null, // Draw #8 vs Draw #9
-        PI2: null, // Draw #7 vs Draw #10
+        PI1: 9,    // Ethan Xie defeated Alex
+        PI2: 7,    // Ethan defeated Emily
         QF1: null,
         QF2: null,
         QF3: null,
@@ -791,7 +817,14 @@
       const winner = tournament.winners[id];
       const sides = matches[id].sides.map(entrant);
 
-      element.innerHTML = sides.map(player => {
+      if (winner != null) {
+        element.classList.add("completed");
+        element.setAttribute("aria-label", `${id} completed. ${tournament.players[winner]} won.`);
+      } else {
+        element.classList.remove("completed");
+      }
+
+      const teams = sides.map(player => {
         const isWinner = winner != null && player.seed === winner;
         const isEliminated = winner != null && !player.placeholder && player.seed !== winner;
         const classes = ["team", player.placeholder && "placeholder", isWinner && "winner", isEliminated && "eliminated"]
@@ -803,6 +836,8 @@
             <span class="advance" aria-hidden="true">◆</span>
           </div>`;
       }).join("");
+
+      element.innerHTML = teams + (winner != null ? '<span class="match-status">Final</span>' : '');
     }
 
     function validateWinners() {
